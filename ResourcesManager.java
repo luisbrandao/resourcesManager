@@ -230,9 +230,7 @@ class MainFrame extends JFrame {
 		
 		
 // 		=============================================================
-		
-
-// 			usersPanel events +++++++++++++++++++++++++++++++++++++++++++
+//		usersPanel events +++++++++++++++++++++++++++++++++++++++++++
 		if(user.getAdmin()){
 
 
@@ -350,7 +348,6 @@ class MainFrame extends JFrame {
 		
 		setVisible(true);
 	}
-	
 
 	void reloadUsersPanel(){
 		
@@ -359,7 +356,6 @@ class MainFrame extends JFrame {
 		db.query("SELECT userName FROM UsersTable WHERE userName <> '"+ user.getUserName()+"'");
 		while(db.next())
 			userComboBox.addItem(db.getString("userName"));
-			
 	}
 	
 	void registerNewUser(){
@@ -414,8 +410,6 @@ class MainFrame extends JFrame {
 		
 	}
 	
-	
-	
 	void deleteExistingUser(){
 	
 // 		DELETE FROM table_name WHERE some_column=some_value;
@@ -436,15 +430,11 @@ class MainFrame extends JFrame {
 	
 	
 	void reloadResourcesPanel(){
-		
-		
 // 		update combo box
 		resourceComboBox.removeAllItems();
 		db.query("SELECT resourceName FROM ResourcesTable");
 		while(db.next())
 			resourceComboBox.addItem(db.getString("resourceName"));
-	
-	
 	}
 	
 	
