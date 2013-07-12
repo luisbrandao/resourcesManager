@@ -12,18 +12,38 @@ import org.jdesktop.swingx.*;
 
 class User {
 	private String userName;
-	private long userPasswd;
-	private boolean admin, authorized;
+	private String userPasswd;
+	private boolean admin;
 	
 	public void setUserName(String userName)		{ this.userName = userName; }
 	public void setUserPasswd(String userPasswd)	{ this.userPasswd = userPasswd; }
 	public void setAdmin(boolean admin)		 	{ this.admin = admin; }
-	public void setAuthorized(boolean authorized)	{ this.authorized = authorized; }
 	
 	public String getUserName()	{ return userName; }
-	public long getUserPasswd()	{ return userPasswd; }
-	public boolean getAdmin()		{ return admin; }
-	public boolean getAuthorized()	{ return authorized; }
+	public String getUserPasswd()	{ return userPasswd; }
+	public boolean isAdmin()		{ return admin; }
+	
+	public boolean checkPasswd (String senha) {
+		// senha = AdlerChecksum.getAdler(senha);
+		
+		if (this.userPasswd == senha)
+			return true;
+		else
+			return false;
+	}
+		
+	// Construtores:
+	User(){};
+	User(String userName, String userPasswd){
+		this.userName = userName;
+		this.userPasswd = userPasswd; 
+		this.admin = false ;
+	}
+	User(String userName, String userPasswd, boolean admin){
+		this.userName = userName;
+		this.userPasswd = userPasswd; 
+		this.admin = admin;
+	}
 }
 
 class Resource {
@@ -34,21 +54,26 @@ class Resource {
 	public void setResourceDescr(String resourceDescr)	{ this.resourceDescr = resourceDescr; }
 	public String getResourceName()	{ return this.resourceName; }
 	public String getResourceDescr()	{ return this.resourceDescr; }
+	
+	// Construtores:
+	Resource(){};
+	Resource(String resourceName){
+		this.resourceName = resourceName;
+		this.resourceDescr = "";
+	}
+	Resource(String resourceName, String resourceDescr){
+		this.resourceName = resourceName;
+		this.resourceDescr = resourceDescr;
+	}
 }
 
 class Allocation {
 	private String userName;
 	private String resourceName;
-	private integer timeSlot, dateDay, dateMonth, dateYear;
+	private int timeSlot, dateDay, dateMonth, dateYear;
 	
 	public void setUserName(String userName)		{ this.userName = userName; }
 	public void setResourceName(String resourceName){ this.resourceName = resourceName; }
-}
-
-class Acesso {
-	public static void main(String args []) {
-		LiteDataBase db = new LiteDataBase("alfa.sqlite3");
-	}
 }
 
 class AdlerChecksum {
@@ -109,6 +134,7 @@ class LiteDataBase {
 			createDB();
 		}
 	}
+
 	private void createDB() {
 		String query;
 		
@@ -150,4 +176,80 @@ class LiteDataBase {
 		statement.executeUpdate(query);
 		} catch(SQLException sqlex){ System.out.println("ERROR: Unable do create admin user "+ sqlex) ; }
 	}
+
+	public User findUser(String nome){
+		try {
+			query = "SELECT * FROM UsersTable WHERE userName='"+ nome +"'";
+			resultSet = statement.executeQuery(query);
+			
+			if (resultSet.next()) {
+				String userName = resultSet.getString("userName");
+				String userPasswd = resultSet.getString("userPasswd");
+				boolean admin = resultSet.getBoolean("isAdmin");
+				
+				User novo = new User(userName, userPasswd, admin);
+				return novo;
+			} else {
+				System.out.println("ERROR: User: "+ nome +" dont exist!\n");
+			}
+		} catch(SQLException sqlex){ System.out.println("Unable to perform search the user: " + nome +"\n WHY: " + sqlex) ; }
+	return null;
+	}
+	
+	public Resource findResource(String nome){
+		try {
+			query = "SELECT * FROM ResourcesTable WHERE resourceName='"+ nome +"'";
+			resultSet = statement.executeQuery(query);
+			
+			if (resultSet.next()) {
+				String resourceName = resultSet.getString("resourceName");
+				String resourceDescr = resultSet.getString("resourceDescr");
+				
+				Resource novo = new Resource(resourceName, resourceDescr);
+				return novo;
+			} else {
+				System.out.println("ERROR: User: "+ nome +" dont exist!\n");
+			}
+		} catch(SQLException sqlex){ System.out.println("Unable to perform search the resource: " + nome +"\n WHY: " + sqlex) ; }
+	return null;
+	}
+	
+	public void saveUser(User usuario) {
+		
+		// Testa a existencia do usuariao no banco:
+		if ( (this.findUser( usuario.getUserName())) != null ) {
+			try { // Iremos updatear um usuário:
+				query = "UPDATE UsersTable SET " +
+						" userPasswd='"+ usuario.getUserPasswd() +"'"+
+						" isAdmin='"+ usuario.isAdmin() +"'" +
+						" WHERE userName='"+ usuario.getUserName() + "'" ;
+				statement.executeUpdate(query);
+			} catch(SQLException sqlex){ System.out.println("ERROR: Unable to update user: "+ usuario.getUserName()+"\n ERROR: "+ sqlex) ; }
+		} else {
+			try { // Adicionar um novo usuário
+				query = "INSERT INTO UsersTable " +
+						" (userName,userPasswd,isAdmin)" +
+						" VALUES ('"+usuario.getUserName()+"', '"+usuario.getUserPasswd()+"', '"+usuario.isAdmin()+"')" ;
+				statement.executeUpdate(query);
+			} catch(SQLException sqlex){ System.out.println("ERROR: Unable to Insert user: "+ usuario.getUserName()+"\n ERROR: "+ sqlex) ; }
+		}
+	}
+	
+	
+	
+	/*
+	public void retriveUser(User user) {
+		
+	try {
+		query = "SELECT * FROM UsersTable WHERE userName='"+ user.getUserName() +"'");
+		resultSet = statement.executeQuery(query);
+		
+		resultSet
+		} catch(SQLException sqlex){ System.out.println("ERROR: Unable do create admin user "+ sqlex) ; }
+	}
+		
+		
+	
+	User getUser(String nome);
+	*/
 }
