@@ -74,6 +74,16 @@ class Allocation {
 	
 	public void setUserName(String userName)		{ this.userName = userName; }
 	public void setResourceName(String resourceName){ this.resourceName = resourceName; }
+	
+	Allocation(){};
+	Allocation(String userName, String resourceName, int timeSlot, int dateDay, int dateMonth, int dateYear ){
+		this.userName = userName;
+		this.resourceName = resourceName; 
+		this.timeSlot = timeSlot;
+		this.dateDay = dateDay;
+		this.dateMonth = dateMonth;
+		this.dateYear = dateYear;
+	}
 }
 
 class AdlerChecksum {
@@ -254,7 +264,6 @@ class LiteDataBase {
 			} catch(SQLException sqlex){ System.out.println("ERROR: Unable to insert Resource: "+ recurso.getResourceName()+"\n ERROR: "+ sqlex) ; }
 		}
 	}
-	
 	
 	
 	/*
