@@ -264,21 +264,4 @@ class LiteDataBase {
 			} catch(SQLException sqlex){ System.out.println("ERROR: Unable to insert Resource: "+ recurso.getResourceName()+"\n ERROR: "+ sqlex) ; }
 		}
 	}
-	
-	
-	/*
-	public void retriveUser(User user) {
-		
-	try {
-		query = "SELECT * FROM UsersTable WHERE userName='"+ user.getUserName() +"'");
-		resultSet = statement.executeQuery(query);
-		
-		resultSet
-		} catch(SQLException sqlex){ System.out.println("ERROR: Unable do create admin user "+ sqlex) ; }
-	}
-		
-		
-	
-	User getUser(String nome);
-	*/
 }
