@@ -235,6 +235,26 @@ class LiteDataBase {
 		}
 	}
 	
+	public void saveResource(Resource recurso) {
+		
+		// Testa a existencia do usuariao no banco:
+		if ( (this.findResource( recurso.getResourceName() )) != null ) {
+			try { // Iremos updatear um Recurso:
+				query = "UPDATE ResourcesTable SET " +
+						" resourceDescr='"+ recurso.getResourceDescr() +"'"+
+						" WHERE resourceName='"+ recurso.getResourceName() + "'" ;
+				statement.executeUpdate(query);
+			} catch(SQLException sqlex){ System.out.println("ERROR: Unable to update Resource: "+ recurso.getResourceName()+"\n ERROR: "+ sqlex) ; }
+		} else {
+			try { // Adicionar um novo usuário
+				query = "INSERT INTO ResourcesTable " +
+						" (resourceName,resourceDescr)" +
+						" VALUES ('"+recurso.getResourceName()+"', '"+recurso.getResourceDescr()+"')" ;
+				statement.executeUpdate(query);
+			} catch(SQLException sqlex){ System.out.println("ERROR: Unable to insert Resource: "+ recurso.getResourceName()+"\n ERROR: "+ sqlex) ; }
+		}
+	}
+	
 	
 	
 	/*
