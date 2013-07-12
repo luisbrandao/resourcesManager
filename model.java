@@ -61,7 +61,7 @@ class AdlerChecksum {
 		checksum.update(str.getBytes());
 		return checksum.getValue();
 	}
-}
+}z
 
 class LiteDataBase {
 
