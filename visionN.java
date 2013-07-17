@@ -14,10 +14,14 @@ public class visionN {
 	public static void main(String args []) {
 		LiteDataBase db = new LiteDataBase("ResourceManager.sqlite3");
 		
+	UserPassDialog entrada = new UserPassDialog(db);
+	System.out.println("UserAuth: "+ entrada.whichUserAuth().getUserName() +"\n");
 	
-	User user = new User();
+	// desaloca janela de entrada
+	entrada = null;
 	
-	new UserPassDialog(db,user);
+	
+	
 	}
 }
 
@@ -28,14 +32,13 @@ class UserPassDialog extends JDialog {
 	JPasswordField passwd;
 	JButton confirm;
 	JLabel resultLabel;
-	LiteDataBase db;
 	User user;
+	LiteDataBase db;
 	
-	UserPassDialog(LiteDataBase db, User user){
+	UserPassDialog(LiteDataBase db){
 		super((Frame)null, "Log in - User and Password please.", true);
 		
 		this.db = db;
-		this.user=user;
 		
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		
@@ -49,7 +52,7 @@ class UserPassDialog extends JDialog {
 		confirm.addActionListener(
 			new ActionListener(){
 				public void actionPerformed(ActionEvent e){
-					if(authorizeCheck( userName.getText(), new String(passwd.getPassword()) ) ){
+					if(authorizeCheck( userName.getText(), new String(passwd.getPassword())) ){
 						dispose();
 					}
 					else{
@@ -69,12 +72,16 @@ class UserPassDialog extends JDialog {
 		setVisible(true);
 	}
 	
+	User whichUserAuth(){
+		return this.user;
+	}
+	
 	boolean authorizeCheck(String nome, String senha){
 		
-		user = db.findUser(nome);
+		this.user = db.findUser(nome);
 		
 		// Se for encontrado um usuário com esse nome
-		if (user != null){
+		if (this.user != null){
 		System.out.println("authorizeCheck: Usuário encontrado!\n");
 			// Checamos se a senha está certa:
 			if  (user.getUserPasswd().equals(senha) ) {
