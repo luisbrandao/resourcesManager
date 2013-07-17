@@ -19,9 +19,9 @@ class User {
 	public void setUserPasswd(String userPasswd)	{ this.userPasswd = userPasswd; }
 	public void setAdmin(boolean admin)		 	{ this.admin = admin; }
 	
-	public String getUserName()	{ return userName; }
-	public String getUserPasswd()	{ return userPasswd; }
-	public boolean isAdmin()		{ return admin; }
+	public String getUserName()	{ return this.userName; }
+	public String getUserPasswd()	{ return this.userPasswd; }
+	public boolean isAdmin()		{ return this.admin; }
 	
 	public boolean checkPasswd (String senha) {
 		// senha = AdlerChecksum.getAdler(senha);
