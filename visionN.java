@@ -14,10 +14,14 @@ public class visionN {
 	public static void main(String args []) {
 		LiteDataBase db = new LiteDataBase("ResourceManager.sqlite3");
 		
+		/*
 		UserPassDialog entrada = new UserPassDialog(db);
 		System.out.println("UserAuth: "+ entrada.whichUserAuth().getUserName() +"\n");
 		
 		new MainFrame(db, entrada.whichUserAuth());
+		*/
+		
+		new MainFrame(db, db.findUser("admin"));
 		
 	}
 }
@@ -486,19 +490,11 @@ class MainFrame extends JFrame {
 			
 			
 			if(strAt.equals("") || strAt == null){
-				
 				db.noResultsQuery("INSERT INTO AllocationsTable(userName, resourceName, timeSlot, dateDay, dateMonth, dateYear, confirmed) VALUES ('"+user.getUserName()+"', '"+allocationResourceComboBox.getSelectedItem()+"', '"+(row-2) + DateClass.getValidDate("', '", (refDay+column-1), "', '", refMonth, "', '", refYear, "', 'false')") );
-				
 				updateAllocationTable();
-			}
-			else if(strAt.equals(user.getUserName())){
-			
-			
-	// 			remove request
+			} else if(strAt.equals(user.getUserName())){
+				//remove request
 				db.noResultsQuery("DELETE FROM AllocationsTable WHERE userName='"+user.getUserName()+"'  AND resourceName='"+allocationResourceComboBox.getSelectedItem()+"' AND timeSlot='"+(row-2)+"' "+ 	DateClass.getValidDate("AND dateDay='",(refDay+column-1),"' AND dateMonth='",refMonth,"' AND dateYear='",refYear,"'") );
-				
-				
-
 				updateAllocationTable();
 			}
 		}
@@ -531,7 +527,7 @@ class MainFrame extends JFrame {
 
 		for(int slot=0; slot<9; slot++){
 			for(int i=0; i<7; i++){
-				db.query("SELECT userName FROM AllocationsTable WHERE timeSlot='"+ slot +"' AND " + DateClass.getValidQuery(newDay+i, newMonth, newYear) + " AND resourceName='" + allocationResourceComboBox.getSelectedItem() + "'");
+				db.query("SELECT userName FROM AllocationsTable WHERE confirmed='true' AND timeSlot='"+ slot +"' AND " + DateClass.getValidQuery(newDay+i, newMonth, newYear) + " AND resourceName='" + allocationResourceComboBox.getSelectedItem() + "'");
 				
 				while(db.next()){
 					allocationTable.setValueAt(db.getString("userName"), slot+2, i+1);
@@ -545,7 +541,6 @@ class MainFrame extends JFrame {
 	void updateAllocationTable(){
 		Calendar calendar = new GregorianCalendar();
 		calendar.setTime(datePicker.getDate());
-
 		dateChose(calendar.get(Calendar.DAY_OF_MONTH), calendar.get(Calendar.MONTH)+1, calendar.get(Calendar.YEAR));	
 		
 	}
