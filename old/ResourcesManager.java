@@ -10,33 +10,22 @@ import java.util.*;
 import java.util.zip.*;
 import org.jdesktop.swingx.*;
 
-public class visionN {
-	public static void main(String args []) {
-		LiteDataBase db = new LiteDataBase("ResourceManager.sqlite3");
-		
-		UserPassDialog entrada = new UserPassDialog(db);
-		System.out.println("UserAuth: "+ entrada.whichUserAuth().getUserName() +"\n");
-		
-		new MainFrame(db, entrada.whichUserAuth());
-		
-	}
-}
-
 class UserPassDialog extends JDialog {
 
 	JTextField userName;
 	JPasswordField passwd;
 	JButton confirm;
 	JLabel resultLabel;
-	User user;
-	LiteDataBase db;
 	
-	UserPassDialog(LiteDataBase db){
-		super((Frame)null, "Log in - User and Password please.", true);
+	LiteDataBase db;
+	User user;
+	
+	UserPassDialog(String title, LiteDataBase db, User user){
+		super((Frame)null, title, true);
+		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		
 		this.db = db;
-		
-		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		this.user = user;
 		
 		setLayout(new FlowLayout());
 		
@@ -48,7 +37,7 @@ class UserPassDialog extends JDialog {
 		confirm.addActionListener(
 			new ActionListener(){
 				public void actionPerformed(ActionEvent e){
-					if(authorizeCheck( userName.getText(), new String(passwd.getPassword())) ){
+					if(authorizeUser()){
 						dispose();
 					}
 					else{
@@ -68,31 +57,41 @@ class UserPassDialog extends JDialog {
 		setVisible(true);
 	}
 	
-	User whichUserAuth(){
-		return this.user;
-	}
 	
-	boolean authorizeCheck(String nome, String senha){
+	boolean authorizeUser(){
+	
+		user.setUserName(userName.getText());
+		user.setUserPasswd(new String(passwd.getPassword()));
+			
+// 		check if the user is registered and if password is correct
+		db.query("SELECT COUNT(*) AS countVar FROM UsersTable WHERE userName='"+ user.getUserName() +"' AND userPasswd='"+ user.getUserPasswd() +"'");
 		
-		this.user = db.findUser(nome);
+		db.next();
+		if(db.getLong("countVar") == 1){
 		
-		// Se for encontrado um usuário com esse nome
-		if (this.user != null){
-		System.out.println("authorizeCheck: Usuário encontrado!\n");
-			// Checamos se a senha está certa:
-			if  (user.getUserPasswd().equals(senha) ) {
-				System.out.println("authorizeCheck: Senha correta!\n");
-				return true;
-			} else
-				System.out.println("authorizeCheck: Senha errada!\n");
-		} else 
-			System.out.println("authorizeCheck: Usuário não encontrado!\n");
+			user.setAuthorized(true);
 		
-	// Não foi possivel autenticar
-	return false;
-	}
-}
+			db.query("SELECT IsAdmin FROM UsersTable WHERE userName='"+user.getUserName()+"'");
+						
+			db.next();
+			if(db.getLong("IsAdmin") == 1){
+				user.setAdmin(true);
+				System.out.println("You have administrator privileges.");
+			}
+			else{
+				user.setAdmin(false);
+				System.out.println("You don't have administrator privileges.");
+			}
+		
+			return true;
+		}
+		else
+			return false;
 
+		
+	}
+
+}
 class MainFrame extends JFrame {
 	
 	JTabbedPane tabbedPane;
@@ -140,21 +139,21 @@ class MainFrame extends JFrame {
 		tabbedPane = new JTabbedPane();
 		add(tabbedPane);
 		
-		if( user.isAdmin()){
+		if(user.getAdmin()){
 			usersPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 			resourcesPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		}		
 		allocationsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		
 		
-		if( user.isAdmin() ){
+		if(user.getAdmin()){
 			tabbedPane.add("Users", usersPanel);
 			tabbedPane.add("Resources", resourcesPanel);
 		}
 		tabbedPane.add("Allocations", allocationsPanel);
 
 		
-		if(user.isAdmin()){
+		if(user.getAdmin()){
 			tabbedPane.setToolTipTextAt(0, "Register new users");
 			tabbedPane.setToolTipTextAt(1, "Register new resources");
 			tabbedPane.setToolTipTextAt(2, "Make allocations");
@@ -165,7 +164,7 @@ class MainFrame extends JFrame {
 		
 		
 
-		if(user.isAdmin()){
+		if(user.getAdmin()){
 
 // 			Users Panel components ------------------------------------------------
 		
@@ -231,7 +230,7 @@ class MainFrame extends JFrame {
 		
 // 		=============================================================
 //		usersPanel events +++++++++++++++++++++++++++++++++++++++++++
-		if(user.isAdmin()){
+		if(user.getAdmin()){
 
 
 		
@@ -361,32 +360,45 @@ class MainFrame extends JFrame {
 	void registerNewUser(){
 		
 		String newUserName;
-		String newPasswd;
-		boolean isAdminSet;
+		String newPassString;
+		long newUserPasswd;
+		long isAdminSet;
 		boolean goThrough;
 		
 		goThrough = true;
 		
 		newUserName = userTextField.getText();
-		newPasswd = passwdTextField.getText();
+		newPassString = passwdTextField.getText();
 		
 		if(newUserName.equals("")){
 			JOptionPane.showMessageDialog(null, "Invalid value for User.");
 			goThrough = false;
 		}
-		else if(newPasswd.equals("")){
+		else if(newPassString.equals("")){
 			JOptionPane.showMessageDialog(null, "Invalid value for Password.");
 			goThrough = false;
 		}
+		else{
+	// 		Does this new user already exist?		
+			db.query("SELECT COUNT(*) AS countVar FROM UsersTable WHERE userName='"+ newUserName +"'");
+			db.next();
+			if(db.getLong("countVar") > 0){
+				goThrough = false;
+				JOptionPane.showMessageDialog(null, "User already exists.");
+			}
+		}
+			
 		
 		if(goThrough){
+		
+			newUserPasswd = AdlerChecksum.getAdler(newPassString);
+		
 			if(adminCheckBox.isSelected())
-				isAdminSet = true;
+				isAdminSet = 1;
 			else
-				isAdminSet = false;
-			
-			User newUser = new User(newUserName, newPasswd, isAdminSet);
-			db.saveUser(newUser);
+				isAdminSet = 0;
+		
+			db.noResultsQuery("INSERT INTO UsersTable(userName, userPasswd, isAdmin) VALUES ('"+newUserName+"','"+newUserPasswd+"','"+isAdminSet+"')");
 			
 			reloadUsersPanel();
 			
@@ -398,12 +410,23 @@ class MainFrame extends JFrame {
 	}
 	
 	void deleteExistingUser(){
+	
+// 		DELETE FROM table_name WHERE some_column=some_value;
+
 		String toBeDeletedUser;
 		
 		toBeDeletedUser = (String)userComboBox.getSelectedItem();
-		db.deleteUser(db.findUser(toBeDeletedUser));
-		reloadUsersPanel();
+
+		if(toBeDeletedUser != null){
+			db.noResultsQuery("DELETE FROM UsersTable WHERE userName='"+toBeDeletedUser+"'");
+			reloadUsersPanel();
+		}
+		else{
+			JOptionPane.showMessageDialog(null, "There is no users to delete.");
+		}
 	}
+	
+	
 	
 	void reloadResourcesPanel(){
 // 		update combo box
@@ -412,6 +435,7 @@ class MainFrame extends JFrame {
 		while(db.next())
 			resourceComboBox.addItem(db.getString("resourceName"));
 	}
+	
 	
 	void addNewResource(){
 	
@@ -578,3 +602,107 @@ class MainFrame extends JFrame {
 	
 	
 }
+class DateClass {
+	
+	static String getValidDate(int day, int month, int year){
+		
+		Calendar calendar = new GregorianCalendar();
+		
+		calendar.set(Calendar.DAY_OF_MONTH, day);
+		calendar.set(Calendar.MONTH, month-1);
+		calendar.set(Calendar.YEAR, year);
+		
+		return calendar.get(Calendar.DAY_OF_MONTH) + "/" + (calendar.get(Calendar.MONTH)+1) + "/" + calendar.get(Calendar.YEAR);
+	}
+	
+	static String getValidDate(String beforeDay, int day, String beforeMonth, int month, String beforeYear, int year, String endStr){
+		
+		Calendar calendar = new GregorianCalendar();
+		
+		calendar.set(Calendar.DAY_OF_MONTH, day);
+		calendar.set(Calendar.MONTH, month-1);
+		calendar.set(Calendar.YEAR, year);
+		
+		return beforeDay + calendar.get(Calendar.DAY_OF_MONTH) + beforeMonth + (calendar.get(Calendar.MONTH)+1) + beforeYear + calendar.get(Calendar.YEAR) + endStr;
+	}
+	
+	
+	static String getValidQuery(int day, int month, int year){
+	
+		Calendar calendar = new GregorianCalendar();
+		
+		calendar.set(Calendar.DAY_OF_MONTH, day);
+		calendar.set(Calendar.MONTH, month-1);
+		calendar.set(Calendar.YEAR, year);
+		
+		return "dateDay='" + calendar.get(Calendar.DAY_OF_MONTH) + "' AND dateMonth='" + (calendar.get(Calendar.MONTH)+1) + "' AND dateYear='" + calendar.get(Calendar.YEAR) + "'";
+	}
+	
+	
+	
+// 	get Day Of Week
+	static String getDOW(int day, int month, int year){
+	
+		Calendar calendar = new GregorianCalendar();
+		
+		calendar.set(Calendar.DAY_OF_MONTH, day);
+		calendar.set(Calendar.MONTH, month-1);
+		calendar.set(Calendar.YEAR, year);
+		
+		switch(calendar.get(Calendar.DAY_OF_WEEK)){
+			case Calendar.MONDAY 	: return "Mon";
+			case Calendar.TUESDAY 	: return "Tue";
+			case Calendar.WEDNESDAY	: return "Wed";
+			case Calendar.THURSDAY	: return "Thu";
+			case Calendar.FRIDAY	: return "Fri";
+			case Calendar.SATURDAY	: return "Sat";
+			case Calendar.SUNDAY	: return "Sun";
+			default			: return null;
+		}
+	}
+	
+}
+// executar =>  java -classpath ".:./*" ResourcesManager
+class ResourcesManager {
+	public static void main(String[] args){
+
+
+		User user = new User();
+		LiteDataBase db = new LiteDataBase("ResourcesManager.db");
+	
+		new UserPassDialog("Log in - User and Password please.", db, user);
+		
+		if(user.getAuthorized())
+			new MainFrame(db, user);
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

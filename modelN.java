@@ -119,7 +119,7 @@ class LiteDataBase {
 		this.file = new File (dbName);
 		
 		if(file.exists()) {
-			System.out.print("This database name already exists\n");
+			System.out.print("The database: "+dbName+" already exists!\nOpening....\n");
 			
 			
 			try { // Tenta conectar no arquivo existente
@@ -130,7 +130,7 @@ class LiteDataBase {
 				System.exit(0);
 			}
 		} else {
-			System.out.print("This database name do not exists\n");
+			System.out.print("The database "+dbName+" do not exists\nCreating one...\n");
 			
 			try { // Prepara a conexão para o banco ser criado.
 				this.connection = DriverManager.getConnection("jdbc:sqlite:"+dbName);
@@ -262,6 +262,73 @@ class LiteDataBase {
 						" VALUES ('"+recurso.getResourceName()+"', '"+recurso.getResourceDescr()+"')" ;
 				statement.executeUpdate(query);
 			} catch(SQLException sqlex){ System.out.println("ERROR: Unable to insert Resource: "+ recurso.getResourceName()+"\n ERROR: "+ sqlex) ; }
+		}
+	}
+	
+	public void deleteUser(User usuario) {
+		
+		// Testa a existencia do usuariao no banco:
+		if ( (this.findUser( usuario.getUserName())) != null ) {
+			try { // Iremos updatear um usuário:
+				query = "DELETE FROM UsersTable " +
+						" WHERE userName='"+ usuario.getUserName() + "'" ;
+				statement.executeUpdate(query);
+			} catch(SQLException sqlex){ System.out.println("ERROR: Unable to remove user: "+ usuario.getUserName()+"\nERROR: "+ sqlex) ; }
+		}
+		System.out.println("Deleted user: "+ usuario.getUserName()+"\n");
+	}
+	
+	void query(String query) {
+	
+// 		executes given SQL statement
+// 		executeQuery never returns null
+		try{
+			System.out.println(query);
+			this.resultSet = statement.executeQuery(query);
+		}
+		catch(Exception e){
+			System.out.println("LiteDataBase->query(String): " + e);
+		}
+	}
+	
+	void noResultsQuery(String query){
+		try{
+			System.out.println(query);
+			statement.executeUpdate(query);
+		}
+		catch(Exception e){
+			JOptionPane.showMessageDialog(null, "Problem!" + e);
+			System.out.println("LiteDataBase->noResultsQuery: " + e);
+		}		
+	}
+	
+	boolean next(){
+		try{
+			return resultSet.next();
+		}
+		catch(Exception e){
+			System.out.println("LiteDataBase->next: " + e);
+			return false;
+		}		
+	}
+	
+	String getString(String columnName){
+		try{
+			return resultSet.getString(columnName);
+		}
+		catch(Exception e){
+			System.out.println("LiteDataBase->getString: " + e);
+			return null;
+		}		
+	}
+	
+	long getLong(String columnName){
+		try{
+			return resultSet.getLong(columnName);
+		}
+		catch(Exception e){
+			System.out.println("LiteDataBase->getLong: " + e);
+			return 0;
 		}
 	}
 }
