@@ -217,7 +217,7 @@ class LiteDataBase {
 				Resource novo = new Resource(resourceName, resourceDescr);
 				return novo;
 			} else {
-				System.out.println("ERROR: User: "+ nome +" dont exist!\n");
+				System.out.println("ERROR: Resource: "+ nome +" dont exist!\n");
 			}
 		} catch(SQLException sqlex){ System.out.println("Unable to perform search the resource: " + nome +"\n WHY: " + sqlex) ; }
 	return null;
