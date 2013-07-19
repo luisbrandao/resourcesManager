@@ -464,18 +464,17 @@ class MainFrame extends JFrame {
 // 		JOptionPane.showMessageDialog(this, "Cell ("+ row +","+ column +") was clicked.");
 		
 		if( (row>=2) && (column>=1) ){
+/*			column 1 => (day, month, year)
+			column 2 => (day+1, month, year)
+			column 3 => (day+2, month, year)...
+			...
+			column j => (day+j-1, month, year)
 			
-// 			column 1 => (day, month, year)
-// 			column 2 => (day+1, month, year)
-// 			column 3 => (day+2, month, year)...
-// 			...
-// 			column j => (day+j-1, month, year)
-	
-// 			row 2 => slot 0
-// 			row 3 => slot 1
-// 			row 4 => slot 2
-// 			...
-// 			row i => slot i - 2
+			row 2 => slot 0
+			row 3 => slot 1
+			row 4 => slot 2
+			...
+			row i => slot i - 2 */
 			
 			
 			Calendar calendar = new GregorianCalendar();
@@ -488,9 +487,7 @@ class MainFrame extends JFrame {
 			
 			if(strAt.equals("") || strAt == null){
 				
-				
-				db.noResultsQuery("INSERT INTO AllocationsTable(userName, resourceName, timeSlot, dateDay, dateMonth, dateYear) VALUES ('"+user.getUserName()+"', '"+allocationResourceComboBox.getSelectedItem()+"', '"+(row-2) + DateClass.getValidDate("', '", (refDay+column-1), "', '", refMonth, "', '", refYear, "')") );
-				
+				db.noResultsQuery("INSERT INTO AllocationsTable(userName, resourceName, timeSlot, dateDay, dateMonth, dateYear, confirmed) VALUES ('"+user.getUserName()+"', '"+allocationResourceComboBox.getSelectedItem()+"', '"+(row-2) + DateClass.getValidDate("', '", (refDay+column-1), "', '", refMonth, "', '", refYear, "', 'false')") );
 				
 				updateAllocationTable();
 			}

@@ -164,7 +164,7 @@ class LiteDataBase {
 			
 		try { // Cria a tabela de agendamentos
 			query = "CREATE TABLE AllocationsTable " +
-						"(ID INT PRIMARY KEY NOT NULL," +
+						"(Id INTEGER PRIMARY KEY NOT NULL," +
 						" userName VARCHAR(255) NOT NULL," +
 						" resourceName VARCHAR(255) NOT NULL," +
 						" timeSlot INT NOT NULL," +
