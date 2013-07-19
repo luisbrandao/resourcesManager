@@ -3,7 +3,6 @@ import java.sql.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
-import java.awt.*;
 import java.awt.Container.*;
 import java.awt.event.*;
 import java.util.*;
@@ -223,6 +222,28 @@ class LiteDataBase {
 		} catch(SQLException sqlex){ System.out.println("Unable to perform search the resource: " + nome +"\n WHY: " + sqlex) ; }
 	return null;
 	}
+
+	public List UserList() {
+		int i = 0;
+		List list = new ArrayList();
+		String userName = "";
+		String userPasswd = "";
+		boolean admin = false;
+		
+		try {
+			query = "SELECT * FROM UsersTable";
+			resultSet = statement.executeQuery(query);
+			
+			while (resultSet.next())
+				userName = resultSet.getString("userName");
+				userPasswd = resultSet.getString("userPasswd");
+				admin = resultSet.getBoolean("isAdmin");
+				
+				list.add(new User(userName, userPasswd, admin));
+				i++;
+		} catch(SQLException sqlex){ System.out.println("Unable to list the users" + sqlex) ; }
+	return list;
+	}
 	
 	public void saveUser(User usuario) {
 		
@@ -276,6 +297,19 @@ class LiteDataBase {
 			} catch(SQLException sqlex){ System.out.println("ERROR: Unable to remove user: "+ usuario.getUserName()+"\nERROR: "+ sqlex) ; }
 		}
 		System.out.println("Deleted user: "+ usuario.getUserName()+"\n");
+	}
+	
+	public void deleteResource(Resource recurso) {
+		
+		// Testa a existencia do recurso no banco:
+		if ( (this.findResource( recurso.getResourceName())) != null ) {
+			try { // Iremos updatear um usuário:
+				query = "DELETE FROM ResourcesTable " +
+						" WHERE resourceName='"+ recurso.getResourceName() + "'" ;
+				statement.executeUpdate(query);
+			} catch(SQLException sqlex){ System.out.println("ERROR: Unable to remove resource: "+ recurso.getResourceName()+"\nERROR: "+ sqlex) ; }
+		}
+		System.out.println("Deleted resource: "+ recurso.getResourceName()+"\n");
 	}
 	
 	void query(String query) {
