@@ -393,8 +393,6 @@ class MainFrame extends JFrame {
 			userTextField.setText("");
 			passwdTextField.setText("");
 		}
-	
-		
 	}
 	
 	void deleteExistingUser(){
@@ -425,42 +423,21 @@ class MainFrame extends JFrame {
 		if(newResourceName.equals("")){
 			JOptionPane.showMessageDialog(null, "Invalid value for Resource.");
 			goThrough = false;
-		}
-		else{
-	// 		Does this new resource already exist?		
-			db.query("SELECT COUNT(*) AS countVar FROM ResourcesTable WHERE resourceName='"+ newResourceName +"'");
-			db.next();
-			if(db.getLong("countVar") > 0){
-				goThrough = false;
-				JOptionPane.showMessageDialog(null, "Resource already exists.");
-			}
+		} else {
+			Resource newResouce = new Resource(newResourceName);
+			db.saveResource(newResouce);
 		}
 		
-		if(goThrough){
-		
-			db.noResultsQuery("INSERT INTO ResourcesTable(resourceName) VALUES ('"+newResourceName+"')");
-			
-			reloadResourcesPanel();
-			resourceTextField.setText("");
-		}
+	reloadResourcesPanel();
+	resourceTextField.setText("");
 	}
 	
-	
 	void deleteExistingResource(){
-	
 		String toBeDeletedResource;
 		
 		toBeDeletedResource = (String)resourceComboBox.getSelectedItem();
-
-		if(toBeDeletedResource != null){
-			db.noResultsQuery("DELETE FROM ResourcesTable WHERE resourceName='"+toBeDeletedResource+"'");
-			reloadResourcesPanel();
-		}
-		else{
-			JOptionPane.showMessageDialog(null, "There is no resources to delete.");
-		}
-		
-	
+		db.deleteResource(db.findResource(toBeDeletedResource));
+		reloadResourcesPanel();
 	}
 	
 	void reloadAllocationsPanel() {
