@@ -121,6 +121,9 @@ class MainFrame extends JFrame {
 	JComboBox resourceComboBox;
 	JButton resourceDeleteButton;
 // 	----------------------------------------------------
+	JPanel confirmationPanel;
+// 	----------------------------------------------------
+
 	JPanel allocationsPanel;
 	
 	JLabel allocationResourceLabel;
@@ -147,6 +150,7 @@ class MainFrame extends JFrame {
 		if( user.isAdmin()){
 			usersPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 			resourcesPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+			confirmationPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		}		
 		allocationsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		
@@ -154,6 +158,7 @@ class MainFrame extends JFrame {
 		if( user.isAdmin() ){
 			tabbedPane.add("Users", usersPanel);
 			tabbedPane.add("Resources", resourcesPanel);
+			tabbedPane.add("Confirmation", confirmationPanel);
 		}
 		tabbedPane.add("Allocations", allocationsPanel);
 
@@ -206,6 +211,10 @@ class MainFrame extends JFrame {
 			resourcesPanel.add(addButton);
 			resourcesPanel.add(resourceComboBox);
 			resourcesPanel.add(resourceDeleteButton);
+		
+	// 		Confirmation Panel components --------------------------------------------
+		// confirmation code
+
 		
 		}
 		
