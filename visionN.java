@@ -121,11 +121,14 @@ class MainFrame extends JFrame {
 	JComboBox resourceComboBox;
 	JButton resourceDeleteButton;
 // 	----------------------------------------------------
+	// TODO: Váriaveis
 	JPanel confirmationPanel;
+	JLabel confirmationLabel;
+	JComboBox confirmationComboBox;
+	JTable confirmationTable;
 // 	----------------------------------------------------
 
 	JPanel allocationsPanel;
-	
 	JLabel allocationResourceLabel;
 	JComboBox allocationResourceComboBox;
 	JXDatePicker datePicker;
@@ -214,8 +217,24 @@ class MainFrame extends JFrame {
 		
 	// 		Confirmation Panel components --------------------------------------------
 		// confirmation code
-
+		// TODO: Codigo
+		confirmationLabel = new JLabel("Resource:");
+		(confirmationComboBox = new JComboBox()).setFocusable(false);
 		
+		confirmationTable = new JTable(
+			new DefaultTableModel(10, 7){
+				public boolean isCellEditable(int row, int column){
+					return false;
+				}
+			}
+		);
+		
+		confirmationTable.setFocusable(false);
+		confirmationTable.setRowSelectionAllowed(false);
+		
+		confirmationPanel.add(confirmationLabel);
+		confirmationPanel.add(confirmationComboBox);
+		confirmationPanel.add(confirmationTable);
 		}
 		
 // 		Allocation Panel components -------------------------------------------
@@ -245,8 +264,6 @@ class MainFrame extends JFrame {
 // 		=============================================================
 //		usersPanel events +++++++++++++++++++++++++++++++++++++++++++
 		if(user.isAdmin()){
-
-
 		
 			usersPanel.addAncestorListener(
 				new AncestorListener(){
@@ -356,11 +373,39 @@ class MainFrame extends JFrame {
 // 			}
 // 		);
 		
+
+// 		confimationsPanel events ++++++++++++++++++++++++++++++++++++++++++++
 		
-		
+		confirmationComboBox.addActionListener (new ActionListener () {
+	    		public void actionPerformed(ActionEvent e) {
+				reloadConfirmationTable();	
+			}
+		});
 		
 		setVisible(true);
 	}
+
+	void reloadConfirmationTable(){
+				DefaultTableModel model = (DefaultTableModel) confirmationTable.getModel();
+				int rows = model.getRowCount(); 
+				for(int i = rows - 1; i >=0; i--)
+				{
+				   model.removeRow(i); 
+				}
+
+				model.addRow(new Object[]{"userName 1", "resourceName", "timeSlot", "dateDay", "dateMonth", "dateYear", "confirmed"});
+		
+				db.query("SELECT userName, resourceName, timeSlot, dateDay, dateMonth, dateYear, confirmed FROM AllocationsTable");
+				while(db.next())
+					model.addRow(new Object[]{	db.getString("userName"), 
+									db.getString("resourceName"), 
+									db.getString("timeSlot"), 
+									db.getString("dateDay"), 
+									db.getString("dateMonth"), 
+									db.getString("dateYear"), 
+									db.getString("confirmed")});
+
+	}	
 
 	void reloadUsersPanel(){
 		
@@ -419,9 +464,13 @@ class MainFrame extends JFrame {
 	void reloadResourcesPanel(){
 // 		update combo box
 		resourceComboBox.removeAllItems();
+		confirmationComboBox.removeAllItems();
 		db.query("SELECT resourceName FROM ResourcesTable");
-		while(db.next())
+
+		while(db.next()) {
 			resourceComboBox.addItem(db.getString("resourceName"));
+			confirmationComboBox.addItem(db.getString("resourceName"));
+		}
 	}
 	
 	void addNewResource(){
@@ -550,9 +599,10 @@ class MainFrame extends JFrame {
 	void updateAllocationTable(){
 		Calendar calendar = new GregorianCalendar();
 		calendar.setTime(datePicker.getDate());
-		dateChose(calendar.get(Calendar.DAY_OF_MONTH), calendar.get(Calendar.MONTH)+1, calendar.get(Calendar.YEAR));	
-		
+		dateChose(calendar.get(Calendar.DAY_OF_MONTH), calendar.get(Calendar.MONTH)+1, calendar.get(Calendar.YEAR));			
 	}
 	
+
+
 	
 }
