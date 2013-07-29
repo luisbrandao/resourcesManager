@@ -343,14 +343,12 @@ class MainFrame extends JFrame {
 					String strAt;
 					int row = allocationTable.rowAtPoint(e.getPoint());
 					int column = allocationTable.columnAtPoint(e.getPoint());
-
 					strAt = (String)allocationTable.getValueAt(row, column);
 					
 					allocationTableCellClicked(row, column, strAt);
 				}
 			}
 		);
-
 		datePicker.addActionListener(
 			new ActionListener(){
 				public void actionPerformed(ActionEvent e){
@@ -362,9 +360,20 @@ class MainFrame extends JFrame {
 		
 // 		confimationsPanel events ++++++++++++++++++++++++++++++++++++++++++++
 		
+		confirmationPanel.addAncestorListener(
+			new AncestorListener(){
+// 				event activated when the source (or any ancestor) is set to be Visible
+				public void ancestorAdded(AncestorEvent event){
+					reloadConfirmationTable();
+				}
+				public void ancestorMoved(AncestorEvent event){}
+				public void ancestorRemoved(AncestorEvent event){}
+			}
+		);	
+		
 		confirmationComboBox.addActionListener (new ActionListener () {
 	    		public void actionPerformed(ActionEvent e) {
-				reloadConfirmationTable();	
+				reloadConfirmationTable();
 			}
 		});
 		
@@ -372,35 +381,37 @@ class MainFrame extends JFrame {
 	}
 
 	void reloadConfirmationTable(){
+		String procurar = (String)confirmationComboBox.getSelectedItem();
 		String recurso;
 		
 		confirmationComboBox.removeAllItems();
-		db.query("SELECT resourceName FROM ResourcesTable");
+		db.query("SELECT resourceName FROM ResourcesTable ORDER BY resourceName");
 			while( db.next() ) {
 				recurso = db.getString("resourceName");
 				System.out.println("addItem(" + recurso + ")" );
 				confirmationComboBox.addItem(recurso);
 			}
 		
-		
-		DefaultTableModel model = (DefaultTableModel) confirmationTable.getModel();
-		int rows = model.getRowCount(); 
-		for(int i = rows - 1; i >=0; i--)
-			model.removeRow(i); 
-
-		model.addRow(new Object[]{"userName 1", "resourceName", "timeSlot", "dateDay", "dateMonth", "dateYear", "confirmed"});
-		
-		db.query("SELECT userName, resourceName, timeSlot, dateDay, dateMonth, dateYear, confirmed FROM AllocationsTable");
-		while(db.next()) {
-			model.addRow(new Object[]{
-							db.getString("userName"), 
-							db.getString("resourceName"), 
-							db.getString("timeSlot"), 
-							db.getString("dateDay"), 
-							db.getString("dateMonth"), 
-							db.getString("dateYear"), 
-							db.getString("confirmed")}
-						);
+		if (procurar != null) {
+			DefaultTableModel model = (DefaultTableModel) confirmationTable.getModel();
+			int rows = model.getRowCount(); 
+			for(int i = rows - 1; i >=0; i--)
+				model.removeRow(i); 
+			
+			model.addRow(new Object[]{"userName 1", "resourceName", "timeSlot", "dateDay", "dateMonth", "dateYear", "confirmed"});
+			
+			db.query("SELECT userName, resourceName, timeSlot, dateDay, dateMonth, dateYear, confirmed FROM AllocationsTable WHERE resourceName='"+procurar+"'");
+			while(db.next()) {
+				model.addRow(new Object[]{
+								db.getString("userName"), 
+								db.getString("resourceName"), 
+								db.getString("timeSlot"), 
+								db.getString("dateDay"), 
+								db.getString("dateMonth"), 
+								db.getString("dateYear"), 
+								db.getString("confirmed")}
+							);
+			}
 		}
 	}
 	
@@ -462,7 +473,7 @@ class MainFrame extends JFrame {
 // 		update combo box
 		String recurso;
 		resourceComboBox.removeAllItems();
-		db.query("SELECT resourceName FROM ResourcesTable");
+		db.query("SELECT resourceName FROM ResourcesTable ORDER BY resourceName");
 
 		while( db.next() ) {
 			recurso = db.getString("resourceName");
