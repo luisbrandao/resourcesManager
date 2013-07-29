@@ -360,20 +360,6 @@ class MainFrame extends JFrame {
 		);
 		
 		
-// 		allocationResourceComboBox.addActionListener(
-// 			new ActionListener(){
-// 				public void actionPerformed(ActionEvent e){
-// 					if(allocationResourceComboBox.getItemCount() > 0){
-// 						JOptionPane.showMessageDialog(MainFrame.this, "Action!");
-// 						Porque nao esta adicionando os outros items???????
-// 						updateAllocationTable();
-
-// 					}
-// 				}
-// 			}
-// 		);
-		
-
 // 		confimationsPanel events ++++++++++++++++++++++++++++++++++++++++++++
 		
 		confirmationComboBox.addActionListener (new ActionListener () {
@@ -386,27 +372,38 @@ class MainFrame extends JFrame {
 	}
 
 	void reloadConfirmationTable(){
-				DefaultTableModel model = (DefaultTableModel) confirmationTable.getModel();
-				int rows = model.getRowCount(); 
-				for(int i = rows - 1; i >=0; i--)
-				{
-				   model.removeRow(i); 
-				}
-
-				model.addRow(new Object[]{"userName 1", "resourceName", "timeSlot", "dateDay", "dateMonth", "dateYear", "confirmed"});
+		String recurso;
 		
-				db.query("SELECT userName, resourceName, timeSlot, dateDay, dateMonth, dateYear, confirmed FROM AllocationsTable");
-				while(db.next())
-					model.addRow(new Object[]{	db.getString("userName"), 
-									db.getString("resourceName"), 
-									db.getString("timeSlot"), 
-									db.getString("dateDay"), 
-									db.getString("dateMonth"), 
-									db.getString("dateYear"), 
-									db.getString("confirmed")});
+		confirmationComboBox.removeAllItems();
+		db.query("SELECT resourceName FROM ResourcesTable");
+			while( db.next() ) {
+				recurso = db.getString("resourceName");
+				System.out.println("addItem(" + recurso + ")" );
+				confirmationComboBox.addItem(recurso);
+			}
+		
+		
+		DefaultTableModel model = (DefaultTableModel) confirmationTable.getModel();
+		int rows = model.getRowCount(); 
+		for(int i = rows - 1; i >=0; i--)
+			model.removeRow(i); 
 
-	}	
-
+		model.addRow(new Object[]{"userName 1", "resourceName", "timeSlot", "dateDay", "dateMonth", "dateYear", "confirmed"});
+		
+		db.query("SELECT userName, resourceName, timeSlot, dateDay, dateMonth, dateYear, confirmed FROM AllocationsTable");
+		while(db.next()) {
+			model.addRow(new Object[]{
+							db.getString("userName"), 
+							db.getString("resourceName"), 
+							db.getString("timeSlot"), 
+							db.getString("dateDay"), 
+							db.getString("dateMonth"), 
+							db.getString("dateYear"), 
+							db.getString("confirmed")}
+						);
+		}
+	}
+	
 	void reloadUsersPanel(){
 		
 // 		update combo box
@@ -463,13 +460,14 @@ class MainFrame extends JFrame {
 	
 	void reloadResourcesPanel(){
 // 		update combo box
+		String recurso;
 		resourceComboBox.removeAllItems();
-		confirmationComboBox.removeAllItems();
 		db.query("SELECT resourceName FROM ResourcesTable");
 
-		while(db.next()) {
-			resourceComboBox.addItem(db.getString("resourceName"));
-			confirmationComboBox.addItem(db.getString("resourceName"));
+		while( db.next() ) {
+			recurso = db.getString("resourceName");
+			System.out.println("addItem(" + recurso + ")" );
+			resourceComboBox.addItem(recurso);
 		}
 	}
 	
@@ -513,7 +511,8 @@ class MainFrame extends JFrame {
 		i=0;
 		
 		while(db.next()){
-			allocationResourceComboBox.addItem(str = db.getString("resourceName"));
+			str = db.getString("resourceName");
+			allocationResourceComboBox.addItem(str);
 			System.out.println("addItem(" + str + ")" );
 			i++;
 		}
@@ -558,7 +557,6 @@ class MainFrame extends JFrame {
 		}
 	}
 	
-	
 	void dateChose(int newDay, int newMonth, int newYear){
 		
 		
@@ -595,14 +593,9 @@ class MainFrame extends JFrame {
 		
 	}
 	
-		
 	void updateAllocationTable(){
 		Calendar calendar = new GregorianCalendar();
 		calendar.setTime(datePicker.getDate());
-		dateChose(calendar.get(Calendar.DAY_OF_MONTH), calendar.get(Calendar.MONTH)+1, calendar.get(Calendar.YEAR));			
+		dateChose(calendar.get(Calendar.DAY_OF_MONTH), calendar.get(Calendar.MONTH)+1, calendar.get(Calendar.YEAR));
 	}
-	
-
-
-	
 }
