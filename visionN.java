@@ -222,7 +222,7 @@ class MainFrame extends JFrame {
 		(confirmationComboBox = new JComboBox()).setFocusable(false);
 		
 		confirmationTable = new JTable(
-			new DefaultTableModel(10, 7){
+			new DefaultTableModel(10, 8){
 				public boolean isCellEditable(int row, int column){
 					return false;
 				}
@@ -369,7 +369,20 @@ class MainFrame extends JFrame {
 				public void ancestorMoved(AncestorEvent event){}
 				public void ancestorRemoved(AncestorEvent event){}
 			}
-		);	
+		);
+		
+		confirmationTable.addMouseListener(
+			new MouseInputAdapter(){
+				public void mouseClicked(MouseEvent e){
+					String strAt;
+					int row = confirmationTable.rowAtPoint(e.getPoint());
+					int column = confirmationTable.columnAtPoint(e.getPoint());
+					strAt = (String)allocationTable.getValueAt(row, column);
+					
+					confirmationTableCellClicked(row, column, strAt);
+				}
+			}
+		);
 		
 		confirmationComboBox.addActionListener (new ActionListener () {
 	    		public void actionPerformed(ActionEvent e) {
@@ -398,7 +411,7 @@ class MainFrame extends JFrame {
 			for(int i = rows - 1; i >=0; i--)
 				model.removeRow(i); 
 			
-			model.addRow(new Object[]{"ID","userName 1", "resourceName", "timeSlot", "dateDay", "dateMonth", "dateYear", "confirmed"});
+			model.addRow(new Object[]{"ID","userName", "resourceName", "timeSlot", "dateDay", "dateMonth", "dateYear", "confirmed"});
 			
 			db.query("SELECT * FROM AllocationsTable WHERE resourceName='"+procurar+"'");
 			while(db.next()) {
@@ -567,6 +580,20 @@ class MainFrame extends JFrame {
 				updateAllocationTable();
 			}
 		}
+	}
+	
+	void confirmationTableCellClicked(int row, int column, String strAt){
+		Object linha;
+		int id;
+		
+		System.out.println("Foi clicado na coluna com ID: "+row+", De boa?");
+		
+		linha = confirmationTable.getValueAt(row,0);
+		id = Integer.valueOf((String) linha);
+		
+		System.out.println("O Que está lá é: "+id+", confere amizade?");
+		
+		
 	}
 	
 	void dateChose(int newDay, int newMonth, int newYear){
