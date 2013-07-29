@@ -14,15 +14,10 @@ public class visionN {
 	public static void main(String args []) {
 		LiteDataBase db = new LiteDataBase("ResourceManager.sqlite3");
 		
-		/*
 		UserPassDialog entrada = new UserPassDialog(db);
 		System.out.println("UserAuth: "+ entrada.whichUserAuth().getUserName() +"\n");
 		
 		new MainFrame(db, entrada.whichUserAuth());
-		*/
-		
-		new MainFrame(db, db.findUser("admin"));
-		
 	}
 }
 
@@ -222,7 +217,7 @@ class MainFrame extends JFrame {
 		(confirmationComboBox = new JComboBox()).setFocusable(false);
 		
 		confirmationTable = new JTable(
-			new DefaultTableModel(10, 8){
+			new DefaultTableModel(1, 8){
 				public boolean isCellEditable(int row, int column){
 					return false;
 				}
@@ -359,36 +354,37 @@ class MainFrame extends JFrame {
 		
 		
 // 		confimationsPanel events ++++++++++++++++++++++++++++++++++++++++++++
-		
-		confirmationPanel.addAncestorListener(
-			new AncestorListener(){
-// 				event activated when the source (or any ancestor) is set to be Visible
-				public void ancestorAdded(AncestorEvent event){
+		if(user.isAdmin()){
+			confirmationPanel.addAncestorListener(
+				new AncestorListener(){
+	// 				event activated when the source (or any ancestor) is set to be Visible
+					public void ancestorAdded(AncestorEvent event){
+						reloadConfirmationTable();
+					}
+					public void ancestorMoved(AncestorEvent event){}
+					public void ancestorRemoved(AncestorEvent event){}
+				}
+			);
+			
+			confirmationTable.addMouseListener(
+				new MouseInputAdapter(){
+					public void mouseClicked(MouseEvent e){
+						String strAt;
+						int row = confirmationTable.rowAtPoint(e.getPoint());
+						int column = confirmationTable.columnAtPoint(e.getPoint());
+						strAt = (String)allocationTable.getValueAt(row, column);
+						
+						confirmationTableCellClicked(row, column, strAt);
+					}
+				}
+			);
+			
+			confirmationComboBox.addActionListener (new ActionListener () {
+					public void actionPerformed(ActionEvent e) {
 					reloadConfirmationTable();
 				}
-				public void ancestorMoved(AncestorEvent event){}
-				public void ancestorRemoved(AncestorEvent event){}
-			}
-		);
-		
-		confirmationTable.addMouseListener(
-			new MouseInputAdapter(){
-				public void mouseClicked(MouseEvent e){
-					String strAt;
-					int row = confirmationTable.rowAtPoint(e.getPoint());
-					int column = confirmationTable.columnAtPoint(e.getPoint());
-					strAt = (String)allocationTable.getValueAt(row, column);
-					
-					confirmationTableCellClicked(row, column, strAt);
-				}
-			}
-		);
-		
-		confirmationComboBox.addActionListener (new ActionListener () {
-	    		public void actionPerformed(ActionEvent e) {
-				reloadConfirmationTable();
-			}
-		});
+			});
+		}
 		
 		setVisible(true);
 	}
@@ -585,6 +581,7 @@ class MainFrame extends JFrame {
 	void confirmationTableCellClicked(int row, int column, String strAt){
 		Object linha;
 		int id;
+		Allocation mudar;
 		
 		System.out.println("Foi clicado na coluna com ID: "+row+", De boa?");
 		
@@ -593,7 +590,11 @@ class MainFrame extends JFrame {
 		
 		System.out.println("O Que está lá é: "+id+", confere amizade?");
 		
+		mudar = db.findAllocation(id);
+		mudar.changeState();
+		db.saveAllocation(mudar);
 		
+		reloadConfirmationTable();
 	}
 	
 	void dateChose(int newDay, int newMonth, int newYear){

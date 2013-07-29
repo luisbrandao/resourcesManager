@@ -67,21 +67,41 @@ class Resource {
 }
 
 class Allocation {
+	private int id;
 	private String userName;
 	private String resourceName;
 	private int timeSlot, dateDay, dateMonth, dateYear;
+	private boolean confirmed;
+	
+	public int getAllocationId()						{ return this.id; }
+	public String getAllocationUserName()				{ return this.userName; }
+	public String getAllocationResourceName()			{ return this.resourceName; }
+	public int getAllocationTimeSlot()					{ return this.timeSlot; }
+	public int getAllocationDateDay()					{ return this.dateDay; }
+	public int getAllocationDateMonth()					{ return this.dateMonth; }
+	public int getAllocationDateYear()					{ return this.dateYear; }
+	public boolean getAllocationConfirmed()				{ return this.confirmed; }
 	
 	public void setUserName(String userName)		{ this.userName = userName; }
 	public void setResourceName(String resourceName){ this.resourceName = resourceName; }
 	
+	public void changeState(){
+		if ( this.confirmed == true )
+			this.confirmed = false;
+		else
+			this.confirmed = true;
+	}
+	
 	Allocation(){};
-	Allocation(String userName, String resourceName, int timeSlot, int dateDay, int dateMonth, int dateYear ){
+	Allocation(int id, String userName, String resourceName, int timeSlot, int dateDay, int dateMonth, int dateYear, boolean confirmed ){
+		this.id = id;
 		this.userName = userName;
 		this.resourceName = resourceName; 
 		this.timeSlot = timeSlot;
 		this.dateDay = dateDay;
 		this.dateMonth = dateMonth;
 		this.dateYear = dateYear;
+		this.confirmed = confirmed;
 	}
 }
 
@@ -223,6 +243,30 @@ class LiteDataBase {
 	return null;
 	}
 
+	public Allocation findAllocation(int identificador){
+		try {
+			query = "SELECT * FROM AllocationsTable WHERE id='"+ identificador +"'";
+			resultSet = statement.executeQuery(query);
+			
+			if (resultSet.next()) {
+				int id = resultSet.getInt("ID");
+				String userName = resultSet.getString("userName");
+				String resourceName = resultSet.getString("resourceName");
+				int timeSlot = resultSet.getInt("timeSlot");
+				int dateDay = resultSet.getInt("dateDay");
+				int dateMonth = resultSet.getInt("dateMonth");
+				int dateYear = resultSet.getInt("dateYear");
+				boolean confirmed = resultSet.getBoolean("confirmed");
+				
+				Allocation novo = new Allocation(id, userName, resourceName, timeSlot, dateDay, dateMonth, dateYear, confirmed);
+				return novo;
+			} else {
+				System.out.println("ERROR: Allocation: "+ identificador +" dont exist!\n");
+			}
+		} catch(SQLException sqlex){ System.out.println("Unable to perform search the Allocation: " + identificador +"\n WHY: " + sqlex) ; }
+	return null;
+	}
+	
 	public List UserList() {
 		int i = 0;
 		List list = new ArrayList();
@@ -283,6 +327,33 @@ class LiteDataBase {
 						" VALUES ('"+recurso.getResourceName()+"', '"+recurso.getResourceDescr()+"')" ;
 				statement.executeUpdate(query);
 			} catch(SQLException sqlex){ System.out.println("ERROR: Unable to insert Resource: "+ recurso.getResourceName()+"\n ERROR: "+ sqlex) ; }
+		}
+	}
+	
+	public void saveAllocation(Allocation alocacao) {
+		
+		// Testa a existencia do usuariao no banco:
+		if ( (this.findAllocation( alocacao.getAllocationId() )) != null ) {
+			try { // Iremos updatear uma Alocação:
+				query = "UPDATE AllocationsTable SET " +
+						" userName='"+ alocacao.getAllocationUserName() +"',"+
+						" resourceName='"+ alocacao.getAllocationResourceName() +"',"+
+						" timeSlot='"+ alocacao.getAllocationTimeSlot() +"',"+
+						" dateDay='"+ alocacao.getAllocationDateDay() +"',"+
+						" dateMonth='"+ alocacao.getAllocationDateMonth() +"',"+
+						" dateYear='"+ alocacao.getAllocationDateYear() +"',"+
+						" confirmed='"+ alocacao.getAllocationConfirmed() +"'"+
+						" WHERE ID='"+ alocacao.getAllocationId() + "'" ;
+				System.out.println(query); 
+				statement.executeUpdate(query);
+			} catch(SQLException sqlex){ System.out.println("ERROR: Unable to update Allocation: "+ alocacao.getAllocationId()+"\n ERROR: "+ sqlex) ; }
+		} else {
+			try { // Adicionar uma nova alocação
+				query = "INSERT INTO AllocationsTable " +
+						" (userName, resourceName, timeSlot, dateDay, dateMonth, dateYear, confirmed)" +
+						" VALUES ('"+alocacao.getAllocationUserName()+"', '"+alocacao.getAllocationResourceName()+"','"+alocacao.getAllocationTimeSlot()+"','"+alocacao.getAllocationDateDay()+"','"+alocacao.getAllocationDateMonth()+"','"+alocacao.getAllocationDateYear()+"')" ;
+				statement.executeUpdate(query);
+			} catch(SQLException sqlex){ System.out.println("ERROR: Unable to insert Resource: "+ alocacao.getAllocationResourceName()+"\n ERROR: "+ sqlex) ; }
 		}
 	}
 	
@@ -365,4 +436,14 @@ class LiteDataBase {
 			return 0;
 		}
 	}
+	
+	//int getInt(String columnName){
+		//try{
+			//return resultSet.getInt(columnName);
+		//}
+		//catch(Exception e){
+			//System.out.println("LiteDataBase->getInt: " + e);
+			//return 0;
+		//}
+	//}
 }
