@@ -398,11 +398,12 @@ class MainFrame extends JFrame {
 			for(int i = rows - 1; i >=0; i--)
 				model.removeRow(i); 
 			
-			model.addRow(new Object[]{"userName 1", "resourceName", "timeSlot", "dateDay", "dateMonth", "dateYear", "confirmed"});
+			model.addRow(new Object[]{"ID","userName 1", "resourceName", "timeSlot", "dateDay", "dateMonth", "dateYear", "confirmed"});
 			
-			db.query("SELECT userName, resourceName, timeSlot, dateDay, dateMonth, dateYear, confirmed FROM AllocationsTable WHERE resourceName='"+procurar+"'");
+			db.query("SELECT * FROM AllocationsTable WHERE resourceName='"+procurar+"'");
 			while(db.next()) {
 				model.addRow(new Object[]{
+								db.getString("ID"), 
 								db.getString("userName"), 
 								db.getString("resourceName"), 
 								db.getString("timeSlot"), 
@@ -517,7 +518,7 @@ class MainFrame extends JFrame {
 		int i;
 		
 		allocationResourceComboBox.removeAllItems();
-		db.query("SELECT resourceName FROM ResourcesTable");
+		db.query("SELECT resourceName FROM ResourcesTable ORDER BY resourceName");
 		
 		i=0;
 		
